@@ -2,7 +2,7 @@ package dev.ctsk.aoc
 
 case class Timings(prep: Long, p1: Long, p2: Long)
 
-case class Solution(p1: String, p2: String)
+case class Solution(p1: Object, p2: Object)
 
 abstract class Solver(day: Int):
   def run(input: String): (Timings, Solution)
