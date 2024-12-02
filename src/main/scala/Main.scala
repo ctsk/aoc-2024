@@ -3,7 +3,8 @@ package dev.ctsk.aoc
 import dev.ctsk.aoc.days._
 
 val solvers = Map[Int, Solver](
-  1 -> Day01
+  1 -> Day01,
+  2 -> Day02
 )
 
 @main def main(day: String, input: String): Unit =
