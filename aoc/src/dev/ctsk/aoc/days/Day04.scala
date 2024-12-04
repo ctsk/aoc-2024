@@ -1,56 +1,58 @@
 package dev.ctsk.aoc.days
 
 import dev.ctsk.aoc._
+import scala.compiletime.ops.double
+import scala.reflect.ClassTag
+import scala.collection.mutable.ArrayBuffer
+import scala.collection.parallel.CollectionConverters._
+import scala.collection.parallel.ForkJoinTaskSupport
+import java.util.concurrent.ForkJoinPool
 
 object Day04 extends Solver(4):
+  private val XMAS = "XMAS".r
+  private val REV_XMAS = "XMAS".reverse.r
 
-  def part1(lines: Array[Array[Char]]): Int =
-    def pad(front: Int, line: Array[Char], end: Int): Array[Char] =
-      Array.fill(front)('.') ++ line ++ Array.fill(end)('.')
+  def diagonals[A: ClassTag](m: Vector[Vector[A]]): Vector[Vector[A]] =
+    val diagonals = Vector.fill(m.length + m(0).length - 1)(ArrayBuffer[A]())
 
-    def count(line: Array[Char]) =
-      (0 until line.length - 3)
-        .count(idx => {
-          (line.slice(idx, idx + 4) sameElements Array('X', 'M', 'A', 'S'))
-          || (line.slice(idx, idx + 4) sameElements Array('S', 'A', 'M', 'X'))
-        })
+    for
+      i <- m.indices
+      j <- m(i).indices
+    do diagonals(i + j) += m(i)(j)
 
-    lines.map(count(_)).sum
-      + lines.transpose.map(count(_)).sum
-      + lines.zipWithIndex
-        .map((line, index) => pad(index, line, lines.length - index))
-        .transpose
-        .map(count(_))
-        .sum
-      + lines.zipWithIndex
-        .map((line, index) => pad(lines.length - index, line, index))
-        .transpose
-        .map(count(_))
-        .sum
+    diagonals.map(_.toVector)
 
-  def part2(grid: Array[Array[Char]]): Int =
-    def countXMAS(g: Array[Array[Char]]): Int =
-      (for
-        i <- 0 until g.length - 2
-        j <- 0 until g(i).length - 2
-        if g(i)(j) == 'M' && g(i)(j + 2) == 'M'
-          && g(i + 1)(j + 1) == 'A'
-          && g(i + 2)(j) == 'S' && g(i + 2)(j + 2) == 'S'
-      yield 1).sum
+  def part1(lines: Vector[Vector[Char]]): Int =
+    def count(line: Vector[Char]) =
+      val cs = ArrayCharSequence(line.toArray)
+      XMAS.findAllIn(cs).length + REV_XMAS.findAllIn(cs).length
 
-    List(
-      grid,
-      grid.reverse,
-      grid.transpose,
-      grid.transpose.reverse
-    ).map(countXMAS).sum
+    Vector(
+      lines,
+      lines.transpose,
+      diagonals(lines),
+      diagonals(lines.reverse)
+    ).flatMap(_.toList).map(count).sum
+
+  def part2(grid: Vector[Vector[Char]]): Int =
+    var count = 0
+
+    for
+      i <- 1 until grid.length - 1
+      j <- 1 until grid(i).length - 1
+      if grid(i)(j) == 'A'
+        & (grid(i - 1)(j - 1) + grid(i + 1)(j + 1) == 'S' + 'M')
+        & (grid(i - 1)(j + 1) + grid(i + 1)(j - 1) == 'S' + 'M')
+    do count += 1
+
+    count
 
   def run(input: String): (Timings, Solution) =
     var in = io.Source
       .fromFile(input)
       .getLines()
-      .map { line => line.toArray }
-      .toArray
+      .map { line => line.toVector }
+      .toVector
 
     val (p1_time, p1_solution) = timed { part1(in) }
     val (p2_time, p2_solution) = timed { part2(in) }
