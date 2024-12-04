@@ -5,9 +5,9 @@ import dev.ctsk.aoc.days._
 val solvers = Map[Int, Solver](
   1 -> Day01,
   2 -> Day02,
-  3 -> Day03
+  3 -> Day03,
+  4 -> Day04
 )
-
 
 @main def main(day: String, input: String): Unit =
   solvers.get(day.toInt) match
