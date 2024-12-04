@@ -8,6 +8,6 @@ runonce: "./mill aoc.assembly"
 cmd: "java -jar ./out/aoc/assembly.dest/out.jar %day% %input%"
 environment:
   - AOC_BENCH=1
-daypath: "aoc/dev/ctsk/aoc/Day%dayzero%.scala"
+daypath: "aoc/src/dev/ctsk/aoc/days/Day%dayzero%.scala"
 inputfile: "data/%dayzero%.in"
-answerfile: "data/%dayzero%.out"
+answerfile: "data/%dayzero%.ans"
