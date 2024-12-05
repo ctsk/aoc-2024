@@ -4,7 +4,7 @@ import dev.ctsk.aoc._
 import scala.annotation.nowarn
 
 object Day05 extends Solver(5):
-  def pre(input: os.Path) =
+  def pre(input: os.ReadablePath) =
     val Array(rulesStr, updatesStr) = os.read(input).split("\n\n")
 
     val rules = rulesStr.linesIterator
@@ -19,7 +19,7 @@ object Day05 extends Solver(5):
 
     (rules, updates)
 
-  def run(input: os.Path): (Timings, Solution) =
+  def run(input: os.ReadablePath): (Timings, Solution) =
     val (pre_time, (rules, updates)) = timed { pre(input) }
 
     @nowarn("msg=match may not be exhaustive")

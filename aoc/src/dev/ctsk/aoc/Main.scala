@@ -26,10 +26,10 @@ def runSolver(solver: Solver, input: os.Path): Unit =
   day match
     case "all" =>
       solvers.foreach { case (day, solver) =>
-        runSolver(solver, os.pwd / os.RelPath(input) / f"$day%02d.in")
+        runSolver(solver, os.Path(input, os.pwd) / f"$day%02d.in")
       }
     case num(_) =>
       solvers.get(day.toInt) match
-        case Some(solver) => runSolver(solver, os.pwd / os.RelPath(input))
+        case Some(solver) => runSolver(solver, os.Path(input, os.pwd))
         case None         => println(s"Day $day not solved")
     case _ => println(day)

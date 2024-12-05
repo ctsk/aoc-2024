@@ -38,7 +38,7 @@ object Day04 extends Solver(4):
         && grid(i - 1)(j + 1) + grid(i + 1)(j - 1) == 'S' + 'M'
     yield ()).length
 
-  def run(input: os.Path): (Timings, Solution) =
+  def run(input: os.ReadablePath): (Timings, Solution) =
     var in = os.read.lines(input).map { line => line.toVector }.toVector
 
     val (p1_time, p1_solution) = timed { part1(in) }
