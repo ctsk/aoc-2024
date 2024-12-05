@@ -1,9 +1,10 @@
 package dev.ctsk.aoc.days
 
 import dev.ctsk.aoc._
+import scala.annotation.nowarn
 
 object Day05 extends Solver(5):
-  def pre(input: String): (Set[(Int, Int)], Vector[Vector[Int]]) =
+  def pre(input: String) =
     val Array(rulesStr, updatesStr) =
       io.Source.fromFile(input).mkString.split("\n\n")
 
@@ -22,6 +23,7 @@ object Day05 extends Solver(5):
   def run(input: String): (Timings, Solution) =
     val (pre_time, (rules, updates)) = timed { pre(input) }
 
+    @nowarn("msg=match may not be exhaustive")
     def isOrdered(u: Vector[Int]): Boolean =
       !u.combinations(2).exists { case Seq(a, b) =>
         rules.contains((b, a))
