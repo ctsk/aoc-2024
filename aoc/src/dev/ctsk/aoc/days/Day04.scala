@@ -1,16 +1,13 @@
 package dev.ctsk.aoc.days
 
 import dev.ctsk.aoc._
-import scala.compiletime.ops.double
-import scala.reflect.ClassTag
 import scala.collection.mutable.ArrayBuffer
-import java.util.concurrent.ForkJoinPool
 
 object Day04 extends Solver(4):
   private val XMAS = "XMAS".r
   private val REV_XMAS = "XMAS".reverse.r
 
-  def diagonals[A: ClassTag](m: Vector[Vector[A]]): Vector[Vector[A]] =
+  def diagonals[A](m: Vector[Vector[A]]): Vector[Vector[A]] =
     val diagonals = Vector.fill(m.length + m(0).length - 1)(ArrayBuffer[A]())
 
     for
@@ -30,20 +27,16 @@ object Day04 extends Solver(4):
       lines.transpose,
       diagonals(lines),
       diagonals(lines.reverse)
-    ).flatMap(_.toList).map(count).sum
+    ).flatMap(_.map(count)).sum
 
   def part2(grid: Vector[Vector[Char]]): Int =
-    var count = 0
-
-    for
+    (for
       i <- 1 until grid.length - 1
       j <- 1 until grid(i).length - 1
       if grid(i)(j) == 'A'
-        & (grid(i - 1)(j - 1) + grid(i + 1)(j + 1) == 'S' + 'M')
-        & (grid(i - 1)(j + 1) + grid(i + 1)(j - 1) == 'S' + 'M')
-    do count += 1
-
-    count
+        && grid(i - 1)(j - 1) + grid(i + 1)(j + 1) == 'S' + 'M'
+        && grid(i - 1)(j + 1) + grid(i + 1)(j - 1) == 'S' + 'M'
+    yield ()).length
 
   def run(input: String): (Timings, Solution) =
     var in = io.Source
