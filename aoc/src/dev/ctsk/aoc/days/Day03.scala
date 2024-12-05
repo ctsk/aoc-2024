@@ -24,8 +24,8 @@ object Day03 extends Solver(3):
       }
       ._2
 
-  def run(input: String): (Timings, Solution) =
-    val in = io.Source.fromFile(input).mkString
+  def run(input: os.Path): (Timings, Solution) =
+    val in = os.read(input)
     val (p1_time, p1_solution) = timed { part1(in) }
     val (p2_time, p2_solution) = timed { part2(in) }
 

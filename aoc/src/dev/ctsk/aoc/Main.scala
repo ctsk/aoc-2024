@@ -13,7 +13,7 @@ val solvers = Map[Int, Solver](
 @main def main(day: String, input: String): Unit =
   solvers.get(day.toInt) match
     case Some(solver) =>
-      val (timings, solution) = solver.run(input)
+      val (timings, solution) = solver.run(os.pwd / input)
       sys.env.get("AOC_BENCH") match
         case Some(_) =>
           println(solution.p1)
