@@ -4,8 +4,6 @@ import dev.ctsk.aoc._
 import scala.compiletime.ops.double
 import scala.reflect.ClassTag
 import scala.collection.mutable.ArrayBuffer
-import scala.collection.parallel.CollectionConverters._
-import scala.collection.parallel.ForkJoinTaskSupport
 import java.util.concurrent.ForkJoinPool
 
 object Day04 extends Solver(4):
