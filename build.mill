@@ -5,6 +5,7 @@ import mill._, scalalib._
 object aoc extends ScalaModule {
   def scalaVersion = "3.5.2"
   def ivyDeps = Agg(
-    ivy"com.lihaoyi::os-lib:0.11.3"
+    ivy"com.lihaoyi::os-lib:0.11.3",
+    ivy"org.scala-lang.modules::scala-parallel-collections:1.0.4"
   )
 }

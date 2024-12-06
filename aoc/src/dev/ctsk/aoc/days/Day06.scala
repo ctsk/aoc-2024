@@ -4,12 +4,14 @@ import dev.ctsk.aoc._
 import scala.compiletime.ops.boolean
 import scala.util.boundary.break
 import scala.compiletime.ops.double
+import scala.collection.parallel.CollectionConverters._
 
 object Day06 extends Solver(6):
 
   def patrol(
       grid: Array[Array[Char]],
-      start: (Int, Int)
+      start: (Int, Int),
+      obstacle: (Int, Int)
   ): (Boolean, () => Vector[(Int, Int)]) =
     var seen =
       Array.fill(4)(Array.fill(grid.length)(Array.fill(grid(0).length)(false)))
@@ -27,17 +29,18 @@ object Day06 extends Solver(6):
     seen(dir)(pos._1)(pos._2) = true
 
     while true do
-      val next = (pos._1 + dirs(dir)._1, pos._2 + dirs(dir)._2)
+      var next = (pos._1 + dirs(dir)._1, pos._2 + dirs(dir)._2)
       if next._1 < 0 || next._1 >= grid.length
         || next._2 < 0 || next._2 >= grid(0).length
       then return (false, visited)
-      else if grid(next._1)(next._2) == '#'
+      else if grid(next._1)(next._2) == '#' || next == obstacle
       then dir = (dir + 1) % 4
       else if seen(dir)(next._1)(next._2)
       then return (true, visited)
       else
         seen(dir)(next._1)(next._2) = true
         pos = next
+
     (false, visited)
 
   def run(input: os.ReadablePath): (Timings, Solution) =
@@ -50,15 +53,15 @@ object Day06 extends Solver(6):
         if lines(i)(j) == '^'
       yield (i, j)).head
 
-    val visited = patrol(lines, start)
-    val p1 = visited._2().size
-    var p2 = 0
-    val (p2_time, _) = timed {
-      for (i, j) <- visited._2()
-      do
-        lines(i)(j) = '#'
-        if patrol(lines, start)._1 then p2 += 1
-        lines(i)(j) = '.'
-    }
+    val (p1_time, visited) = timed { patrol(lines, start, (-1, -1))._2() }
+    val p1_solution = visited.length
 
-    return (Timings(0, 0, p2_time), Solution(Int.box(p1), Int.box(p2)))
+    val (p2_time, p2_solution) =
+      timed {
+        visited.par.count((i, j) => patrol(lines, start, (i, j))._1)
+      }
+
+    return (
+      Timings(0, p1_time, p2_time),
+      Solution(Int.box(p1_solution), Int.box(p2_solution))
+    )
