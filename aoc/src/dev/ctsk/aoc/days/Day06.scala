@@ -58,7 +58,9 @@ object Day06 extends Solver(6):
 
     val (p2_time, p2_solution) =
       timed {
-        visited.par.count((i, j) => patrol(lines, start, (i, j))._1)
+        visited.par.count((i, j) =>
+          (i, j) != start && patrol(lines, start, (i, j))._1
+        )
       }
 
     return (
