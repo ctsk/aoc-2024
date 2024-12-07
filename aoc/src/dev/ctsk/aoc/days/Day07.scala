@@ -16,9 +16,10 @@ object Day07 extends Solver(7):
         || search(acc * nums(pos), pos + 1)
         || (elephants && search(concat(acc, nums(pos)), pos + 1))
   def run(input: os.ReadablePath): (Timings, Solution) =
+    val REGEX = """(\d+): (.*)""".r
     val (pre_time, in) = timed {
       os.read.lines(input).map {
-        case s"$value: $rest" => (value.toLong, longs(rest))
+        case REGEX(value, rest) => (value.toLong, longs(rest))
       }.toVector
     }
 
