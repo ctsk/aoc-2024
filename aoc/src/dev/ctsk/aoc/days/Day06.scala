@@ -1,69 +1,65 @@
 package dev.ctsk.aoc.days
 
 import dev.ctsk.aoc._
-import scala.compiletime.ops.boolean
-import scala.util.boundary.break
-import scala.compiletime.ops.double
+import dev.ctsk.aoc.Direction._
+import scala.annotation.tailrec
+import scala.collection.mutable
 import scala.collection.parallel.CollectionConverters._
 
 object Day06 extends Solver(6):
-
-  def patrol(
-      grid: Array[Array[Char]],
-      start: (Int, Int),
-      obstacle: (Int, Int)
-  ): (Boolean, () => Vector[(Int, Int)]) =
-    var seen =
-      Array.fill(4)(Array.fill(grid.length)(Array.fill(grid(0).length)(false)))
-
-    def visited() =
-      (for
-        row <- 0 until grid.length
-        col <- 0 until grid(0).length
-        if (0 until 4).exists(v => seen(v)(row)(col))
-      yield (row, col)).toVector
-
-    var dirs = Vector((-1, 0), (0, 1), (1, 0), (0, -1))
-    var dir = 0
-    var pos = start
-    seen(dir)(pos._1)(pos._2) = true
-
-    while true do
-      var next = (pos._1 + dirs(dir)._1, pos._2 + dirs(dir)._2)
-      if next._1 < 0 || next._1 >= grid.length
-        || next._2 < 0 || next._2 >= grid(0).length
-      then return (false, visited)
-      else if grid(next._1)(next._2) == '#' || next == obstacle
-      then dir = (dir + 1) % 4
-      else if seen(dir)(next._1)(next._2)
-      then return (true, visited)
-      else
-        seen(dir)(next._1)(next._2) = true
-        pos = next
-
-    (false, visited)
+  def analyse(grid: Grid[Char]): Array[Array[Array[Int]]] =
+    val skipMap = Array.fill(grid.height, grid.width, 4)(-1)
+    for
+      obstacle <- grid.find(_ == '#')
+      d: Direction <- Seq(Up, Down, Right, Left)
+      (pt, dist) <- Iterator
+        .iterate(d(obstacle))(d(_))
+        .takeWhile(pt => grid(pt).exists(_ != '#'))
+        .zipWithIndex
+    do skipMap(pt.x)(pt.y)(d.flip.ordinal) = dist
+    skipMap
 
   def run(input: os.ReadablePath): (Timings, Solution) =
-    val lines = os.read.lines(input).map(_.toArray).toArray
+    val grid = Grid(os.read.lines(input).map(_.toArray).toArray)
+    val (pre_time, start) = timed { grid.findFirst(_ == '^').get }
 
-    var start =
-      (for
-        i <- 0 until lines.length
-        j <- 0 until lines(i).length
-        if lines(i)(j) == '^'
-      yield (i, j)).head
+    @tailrec def trace(start: Pose, acc: Set[Point] = Set(start)): Set[Point] =
+      val next = start.step
+      grid(next.pos) match
+        case Some('#') => trace(start.turnRight, acc)
+        case Some(_)   => trace(next, acc + next.pos)
+        case None      => acc
 
-    val (p1_time, visited) = timed { patrol(lines, start, (-1, -1))._2() }
-    val p1_solution = visited.length
+    val (p1_time, guardRoute) = timed { trace(Pose(pos = start, dir = Up)) }
+    val p1_solution = guardRoute.size
 
     val (p2_time, p2_solution) =
       timed {
-        visited.par.count((i, j) =>
-          (i, j) != start && patrol(lines, start, (i, j))._1
-        )
+        val skipMap = analyse(grid)
+
+        def loops(start: Pose, obstacle: Point): Boolean =
+          val seen = mutable.Set(start)
+          @tailrec def rec(cur: Pose): Boolean =
+            val next = cur.step
+            grid(next.pos) match
+              case Some('#') =>
+                if seen.contains(cur) then return true
+                seen += cur
+                rec(cur.turnRight)
+              case Some(_) =>
+                if next.pos == obstacle then return rec(cur.turnRight)
+                if next.pos.x == obstacle.x || next.pos.y == obstacle.y
+                then rec(next)
+                else
+                  val steps = skipMap(cur.pos.x)(cur.pos.y)(cur.dir.ordinal)
+                  steps != -1 && rec(cur.step(steps))
+              case None => false
+          rec(start)
+
+        guardRoute.filter(_ != start).count(loops(Pose(start, Up), _))
       }
 
-    return (
-      Timings(0, p1_time, p2_time),
+    (
+      Timings(pre_time, p1_time, p2_time),
       Solution(Int.box(p1_solution), Int.box(p2_solution))
     )
