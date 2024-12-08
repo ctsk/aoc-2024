@@ -4,10 +4,9 @@ import dev.ctsk.aoc._
 import dev.ctsk.aoc.Direction._
 import scala.annotation.tailrec
 import scala.collection.mutable
-import scala.collection.parallel.CollectionConverters._
 
 object Day06 extends Solver(6):
-  def analyse(grid: Grid[Char]): Array[Array[Array[Int]]] =
+  private def analyse(grid: Grid[Char]): Array[Array[Array[Int]]] =
     val skipMap = Array.fill(grid.height, grid.width, 4)(-1)
     for
       obstacle <- grid.find(_ == '#')
@@ -43,9 +42,7 @@ object Day06 extends Solver(6):
             val next = cur.step
             grid(next.pos) match
               case Some('#') =>
-                if seen.contains(cur) then return true
-                seen += cur
-                rec(cur.turnRight)
+                if seen.add(cur) then rec(cur.turnRight) else true
               case Some(_) =>
                 if next.pos == obstacle then return rec(cur.turnRight)
                 if next.pos.x == obstacle.x || next.pos.y == obstacle.y
