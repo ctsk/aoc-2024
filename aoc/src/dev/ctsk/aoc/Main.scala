@@ -9,7 +9,8 @@ val solvers = Map[Int, Solver](
   4 -> Day04,
   5 -> Day05,
   6 -> Day06,
-  7 -> Day07
+  7 -> Day07,
+  8 -> Day08
 )
 
 def runSolver(solver: Solver, input: os.Path): Unit =
