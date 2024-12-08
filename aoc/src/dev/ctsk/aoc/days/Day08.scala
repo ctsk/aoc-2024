@@ -16,7 +16,7 @@ object Day08 extends Solver(8):
 
     def antinodes(a: Point, b: Point): Iterator[Point] =
       def it(a: Point, b: Point) =
-        Iterator.iterate(a)(_ + a - b).takeWhile(grid.contains)
+        Iterator.iterate(a)(_ + (a - b).reduce).takeWhile(grid.contains)
       it(a, b) ++ it(b, a)
 
     def part1: Int =

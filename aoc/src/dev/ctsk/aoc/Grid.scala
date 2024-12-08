@@ -4,6 +4,7 @@ case class Point(x: Int, y: Int):
   def +(o: Point): Point = Point(x + o.x, y + o.y)
   def -(o: Point): Point = Point(x - o.x, y - o.y)
   def *(n: Int): Point = Point(n * x, n * y)
+  def reduce: Point = { val g = gcd(x.abs, y.abs); Point(x / g, y / g) }
 
 enum Direction:
   case Up, Right, Down, Left
