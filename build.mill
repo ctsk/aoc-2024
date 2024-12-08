@@ -2,10 +2,25 @@ package build
 
 import mill._, scalalib._
 
-object aoc extends ScalaModule {
+import $ivy.`io.github.alexarchambault.mill::mill-native-image::0.1.29`
+import io.github.alexarchambault.millnativeimage.NativeImage
+
+object aoc extends ScalaModule with NativeImage {
   def scalaVersion = "3.5.2"
   def ivyDeps = Agg(
     ivy"com.lihaoyi::os-lib:0.11.3",
     ivy"org.scala-lang.modules::scala-parallel-collections:1.0.4"
+  )
+
+
+  def nativeImageName         = "aoc"
+  def nativeImageMainClass    = "dev.ctsk.aoc.main"
+  def nativeImageClassPath    = runClasspath()
+  def nativeImageGraalVmJvmId = "graalvm-java23"
+  def nativeImageOptions = Seq(
+    "--initialize-at-build-time",
+    "--no-fallback",
+    "--enable-url-protocols=http,https",
+    "-Djdk.http.auth.tunneling.disabledSchemes=",
   )
 }
