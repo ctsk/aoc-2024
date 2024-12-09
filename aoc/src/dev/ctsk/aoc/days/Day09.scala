@@ -17,7 +17,7 @@ object Day09 extends Solver(9):
     def relocate(record: Record): Record =
       val bucket = data.view
         .filter((gapSize, gaps) => gapSize >= record.size && gaps.nonEmpty)
-        .minByOption(_._2.max().offset)
+        .minByOption(_._2.head.offset)
 
       bucket match
         case None => record
