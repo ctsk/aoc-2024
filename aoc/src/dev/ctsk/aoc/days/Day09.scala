@@ -1,42 +1,39 @@
 package dev.ctsk.aoc.days
 
-import dev.ctsk.aoc._
-import scala.collection.mutable.PriorityQueue
-import scala.math.Ordered.orderingToOrdered
+import dev.ctsk.aoc.*
 import scala.annotation.tailrec
+import scala.collection.mutable
 
 object Day09 extends Solver(9):
-  implicit def ord: Ordering[Record] = Ordering.by(-_.offset)
-
+  implicit def ord: Ordering[Record] = Ordering.by(-1 * _.offset)
   case class Record(offset: Int, size: Int, id: Int):
     def checksum: Long = id.toLong * (size * offset + size * (size - 1) / 2)
 
-  case class GapMap(
-      data: Map[Int, PriorityQueue[Record]]
-  ):
+  case class GapMap(data: Map[Int, mutable.PriorityQueue[Record]]):
     def relocate(record: Record): Record =
       val bucket = data.view
         .filter((gapSize, gaps) => gapSize >= record.size && gaps.nonEmpty)
-        .minByOption(_._2.head.offset)
+        .maxByOption(_._2.head)
 
       bucket match
         case None => record
         case Some((gapSize, gaps)) =>
           val gap = gaps.dequeue()
           if gap.offset >= record.offset then return record
-          val remaining = gapSize - record.size
-          if remaining > 0 then
-            data(remaining)
-              .enqueue(Record(gap.offset + record.size, remaining, gap.id))
+          val rest = gapSize - record.size
+          if rest > 0 then
+            data(rest).enqueue(Record(gap.offset + record.size, rest, -1))
           Record(gap.offset, record.size, record.id)
 
   def part1(input: Array[Int]): Long =
     val materialized = input.zipWithIndex.flatMap((x, i) =>
-      if i % 2 == 0 then Iterator.fill(x.toInt)(i / 2)
-      else Iterator.fill(x.toInt)(-1)
+      if i % 2 == 0
+      then Iterator.fill(x)(i / 2)
+      else Iterator.fill(x)(-1)
     )
 
-    @tailrec def compact(l: Int = 0, r: Int = materialized.length - 1): Unit =
+    @tailrec
+    def compact(l: Int = 0, r: Int = materialized.length - 1): Unit =
       if l >= r then return ()
       if materialized(l) != -1 then return compact(l + 1, r)
       if materialized(r) == -1 then return compact(l, r - 1)
@@ -48,19 +45,19 @@ object Day09 extends Solver(9):
 
   def part2(input: Array[Int]): Long =
     val offsets = input.scanLeft(0)(_ + _).toArray
-    val records =
-      input.zipWithIndex.zip(offsets).map { case ((value, index), offset) =>
-        if index % 2 == 0
-        then Record(offset, value, index / 2)
-        else Record(offset, value, -1)
-      }
 
-    val (gaps, files) = records.partition(_.id == -1)
+    val (gaps, files) = input.zip(offsets).zipWithIndex.partitionMap {
+      case ((value, offset), index) =>
+        if index % 2 == 0
+        then Right(Record(offset, value, index / 2))
+        else Left(Record(offset, value, -1))
+    }
+
     val gapMap = GapMap(
-      gaps.groupBy(_.size).mapValues(PriorityQueue.from(_)).toMap
+      gaps.groupBy(_.size).view.mapValues(mutable.PriorityQueue.from).toMap
     )
 
-    files.reverse.map(gapMap.relocate(_)).map(_.checksum).sum
+    files.reverse.map(gapMap.relocate).map(_.checksum).sum
 
   def run(input: os.ReadablePath): (Timings, Solution) =
     val disk = os.read.lines(input)(0).map(_.asDigit).toArray
