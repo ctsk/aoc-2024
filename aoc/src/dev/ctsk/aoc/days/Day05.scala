@@ -24,9 +24,7 @@ object Day05 extends Solver(5):
 
     @nowarn("msg=match may not be exhaustive")
     def isOrdered(u: Vector[Int]): Boolean =
-      !u.combinations(2).exists { case Seq(a, b) =>
-        rules.contains((b, a))
-      }
+      !u.pairs.exists((a, b) => rules.contains((b, a)))
 
     def findMiddle(u: Vector[Int]): Int =
       u.find(e =>
